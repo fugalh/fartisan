@@ -2,8 +2,9 @@
 
 import sys
 import argparse
-import re
+import ast
 from datetime import datetime
+import os
 
 def parse_artisan_log(file_path):
     """
@@ -11,13 +12,14 @@ def parse_artisan_log(file_path):
     """
     roast_data = {
         'title': '',
+        'file': '',
         'date': '',
+        'organization': '',
+        'operator': '',
         'beans': '',
-        'roast_level': '',
-        'duration': '',
-        'temperature': '',
-        'notes': [],
-        'events': []
+        'machine': '',
+        'roasting_notes': '',
+        'cupping_notes': ''
     }
     
     try:
@@ -30,45 +32,39 @@ def parse_artisan_log(file_path):
         print(f"Error reading file: {e}")
         sys.exit(1)
     
-    # Extract basic information using regex patterns
-    # These patterns might need adjustment based on actual file format
-    title_match = re.search(r'Title:\s*(.*)', content, re.IGNORECASE)
-    if title_match:
-        roast_data['title'] = title_match.group(1).strip()
+    # Extract the file name
+    roast_data['file'] = os.path.basename(file_path)
     
-    date_match = re.search(r'Date:\s*(.*)', content, re.IGNORECASE)
-    if date_match:
-        roast_data['date'] = date_match.group(1).strip()
+    # Parse the Python dictionary
+    try:
+        data = ast.literal_eval(content)
+    except Exception as e:
+        print(f"Error parsing file content: {e}")
+        sys.exit(1)
     
-    beans_match = re.search(r'Beans?:\s*(.*)', content, re.IGNORECASE)
-    if beans_match:
-        roast_data['beans'] = beans_match.group(1).strip()
+    # Extract information
+    roast_data['title'] = data.get('title', '')
+    roast_data['organization'] = data.get('organization', '')
+    roast_data['operator'] = data.get('operator', '')
+    roast_data['beans'] = data.get('beans', '')
+    roast_data['machine'] = data.get('roastertype', '')
+    roast_data['roasting_notes'] = data.get('roastingnotes', '')
+    roast_data['cupping_notes'] = data.get('cuppingnotes', '')
     
-    roast_level_match = re.search(r'Roast\s*Level:\s*(.*)', content, re.IGNORECASE)
-    if roast_level_match:
-        roast_data['roast_level'] = roast_level_match.group(1).strip()
-    
-    duration_match = re.search(r'Duration:\s*(.*)', content, re.IGNORECASE)
-    if duration_match:
-        roast_data['duration'] = duration_match.group(1).strip()
-    
-    temp_match = re.search(r'Temp(?:erature)?:\s*(.*)', content, re.IGNORECASE)
-    if temp_match:
-        roast_data['temperature'] = temp_match.group(1).strip()
-    
-    # Extract notes (lines starting with - or *)
-    notes_matches = re.findall(r'[-*]\s*(.*)', content)
-    roast_data['notes'] = [note.strip() for note in notes_matches]
-    
-    # Extract events (timestamped entries)
-    event_matches = re.findall(r'(\d+:\d+:\d+)\s*(.*)', content)
-    roast_data['events'] = [(time, event.strip()) for time, event in event_matches]
-    
-    # If no title was found, create one from beans and date
-    if not roast_data['title'] and (roast_data['beans'] or roast_data['date']):
-        bean_info = roast_data['beans'] if roast_data['beans'] else 'Unknown Beans'
-        date_info = roast_data['date'] if roast_data['date'] else datetime.now().strftime('%Y-%m-%d')
-        roast_data['title'] = f"{bean_info} - {date_info}"
+    # Format date from roastisodate and roasttime
+    roast_date = data.get('roastisodate', '')
+    roast_time = data.get('roasttime', '')
+    if roast_date and roast_time:
+        # Convert to datetime and adjust format
+        try:
+            # Parse the time string
+            time_obj = datetime.strptime(roast_time, '%H:%M:%S')
+            formatted_time = time_obj.strftime('%H:%M')
+            roast_data['date'] = f"{roast_date} {formatted_time}"
+        except ValueError:
+            roast_data['date'] = f"{roast_date} {roast_time}"
+    else:
+        roast_data['date'] = roast_date or roast_time
     
     return roast_data
 
@@ -80,44 +76,55 @@ def format_as_markdown(roast_data):
     
     # Title
     if roast_data['title']:
-        markdown.append(f"# {roast_data['title']}\n")
+        markdown.append(f"# {roast_data['title']}")
     else:
-        markdown.append("# Roast Report\n")
+        markdown.append("# Roast Report")
     
-    # Metadata table
-    markdown.append("| Attribute | Value |")
-    markdown.append("|----------|-------|")
+    # Metadata
+    if roast_data['file']:
+        markdown.append(f"- File: {roast_data['file']}")
     
     if roast_data['date']:
-        markdown.append(f"| Date | {roast_data['date']} |")
+        markdown.append(f"- Date: {roast_data['date']}")
     
+    if roast_data['organization']:
+        markdown.append(f"- Organization: {roast_data['organization']}")
+    
+    if roast_data['operator']:
+        markdown.append(f"- Operator: {roast_data['operator']}")
+    
+    markdown.append("")  # Blank line
+    
+    # Beans section
     if roast_data['beans']:
-        markdown.append(f"| Beans | {roast_data['beans']} |")
+        markdown.append("## Beans")
+        # Split beans by newlines and add each line
+        bean_lines = roast_data['beans'].split('\\n')
+        for line in bean_lines:
+            # Handle escaped characters
+            line = line.replace('\\xe3', 'ã')
+            markdown.append(line)
+        markdown.append("")  # Blank line
     
-    if roast_data['roast_level']:
-        markdown.append(f"| Roast Level | {roast_data['roast_level']} |")
+    # Machine section
+    if roast_data['machine']:
+        markdown.append("## Machine")
+        markdown.append(f"Model: {roast_data['machine']}")
+        markdown.append("")  # Blank line
     
-    if roast_data['duration']:
-        markdown.append(f"| Duration | {roast_data['duration']} |")
+    # Roasting Notes section
+    if roast_data['roasting_notes']:
+        markdown.append("## Roasting Notes")
+        # Handle escaped newlines
+        notes = roast_data['roasting_notes'].replace('\\n', '\n')
+        markdown.append(notes)
+        markdown.append("")  # Blank line
     
-    if roast_data['temperature']:
-        markdown.append(f"| Temperature | {roast_data['temperature']} |")
-    
-    markdown.append("")
-    
-    # Events timeline
-    if roast_data['events']:
-        markdown.append("## Roast Timeline\n")
-        for time, event in roast_data['events']:
-            markdown.append(f"- **{time}**: {event}")
-        markdown.append("")
-    
-    # Notes
-    if roast_data['notes']:
-        markdown.append("## Tasting Notes\n")
-        for note in roast_data['notes']:
-            markdown.append(f"- {note}")
-        markdown.append("")
+    # Cupping Notes section
+    if roast_data['cupping_notes']:
+        markdown.append("## Cupping Notes")
+        markdown.append(roast_data['cupping_notes'])
+        markdown.append("")  # Blank line
     
     return "\n".join(markdown)
 
