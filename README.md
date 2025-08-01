@@ -47,20 +47,19 @@ To modify these settings, use the command-line options or modify the configurati
 
 ## Usage
 
-1. Run the bridge:
+Run the bridge:
    ```bash
-   python3 mqtt_artisan_bridge.py
+   ./mqtt_artisan_bridge.py
    ```
    
    For debugging output:
    ```bash
-   python3 mqtt_artisan_bridge.py --debug
+   ./mqtt_artisan_bridge.py --debug
    ```
 
-2. Configure Artisan to connect to the WebSocket:
-   - Open Artisan
-   - Go to Config » Port
-   - Select the WebSocket tab
+Configure Artisan to connect to the WebSocket:
+![screenshots/ports.png]
+ - Config » Port… » WebSocket tab
    - Set the following parameters:
      - Host: `localhost`
      - Port: `8765`
@@ -68,13 +67,17 @@ To modify these settings, use the command-line options or modify the configurati
    - For the input channels:
      - Input 1 (BT): Set Node to `BT`
      - Input 2 (ET): Set Node to `ET`
+![screenshots/device_assignment.png]
+ - Config » Device…
+   - Choose Meter
+   - Choose "WebSocket" from the dropdown
 
-3. The bridge will:
-   - Connect to the MQTT broker
-   - Subscribe to the `artisan` topic
-   - Listen for JSON messages
-   - Serve a WebSocket endpoint at `ws://localhost:8765/`
-   - Respond to Artisan's requests with the latest data
+The bridge will:
+ - Connect to the MQTT broker
+ - Subscribe to the `artisan` topic
+ - Listen for JSON messages
+ - Serve a WebSocket endpoint at `ws://localhost:8765/`
+ - Respond to Artisan's requests with the latest data
 
 ## Expected MQTT Message Format
 
