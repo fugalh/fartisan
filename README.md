@@ -1,8 +1,17 @@
+# Fugal Artisan Tools
+Supplemental tools for working with [Artisan](https://artisan-scope.org/)
+
+- `mqtt_artisan_bridge.py` - bridge MQTT to Artisan over WebSockets
+- `artisan_log_markdown.py` print roast summary as markdown
+
+Authors: Hans and Von Fugal
+License: MIT
+
 # MQTT to Artisan WebSocket Bridge
 
-This tool bridges MQTT messages to Artisan roasting software via WebSocket, allowing Artisan to receive temperature data (ET and BT values) from MQTT topics.
+This tool bridges MQTT messages to Artisan roasting software via WebSocket, allowing Artisan to receive temperature data (ET and BT values) from an MQTT topic.
 
-## Features
+## Details
 
 - Connects to MQTT broker with authentication
 - Subscribes to specified topic for temperature data
@@ -13,7 +22,7 @@ This tool bridges MQTT messages to Artisan roasting software via WebSocket, allo
 ## Prerequisites
 
 - Python 3.7 or higher
-- MQTT broker (configured at host "bombadil")
+- MQTT broker
 - Artisan roasting software
 
 ## Installation
@@ -34,7 +43,7 @@ The script is pre-configured with the following settings:
 - WebSocket Host: `localhost`
 - WebSocket Port: `8765`
 
-To modify these settings, edit the configuration section at the top of `mqtt_artisan_bridge.py`.
+To modify these settings, use the command-line options or modify the configuration section at the top of `mqtt_artisan_bridge.py`.
 
 ## Usage
 
@@ -51,25 +60,21 @@ To modify these settings, edit the configuration section at the top of `mqtt_art
 2. Configure Artisan to connect to the WebSocket:
    - Open Artisan
    - Go to Config » Port
-   - Select the WebSocket tab (7th tab)
+   - Select the WebSocket tab
    - Set the following parameters:
      - Host: `localhost`
      - Port: `8765`
-     - Path: `/` (leave empty or set to `/`)
-     - Command Node: `command`
-     - Message ID Node: `id`
-     - Data Request Tag: `getData`
-     - Machine ID Node: `machine`
+     - Data Request: `getData`
    - For the input channels:
-     - Input 1 (BT): Set Node to `data` and Sub-Node to `BT`
-     - Input 2 (ET): Set Node to `data` and Sub-Node to `ET`
+     - Input 1 (BT): Set Node to `BT`
+     - Input 2 (ET): Set Node to `ET`
 
 3. The bridge will:
-   - Connect to the MQTT broker at `bombadil`
+   - Connect to the MQTT broker
    - Subscribe to the `artisan` topic
-   - Listen for JSON messages containing ET and BT values
+   - Listen for JSON messages
    - Serve a WebSocket endpoint at `ws://localhost:8765/`
-   - Respond to Artisan's requests with the latest ET and BT values
+   - Respond to Artisan's requests with the latest data
 
 ## Expected MQTT Message Format
 
@@ -87,7 +92,6 @@ Other fields in the JSON will be ignored.
 ## Artisan Configuration
 
 In Artisan's WebSocket configuration:
-- The "Data Request" field should be set to `getData` to request all data in one request
 - The expected response format is:
   ```json
   {
@@ -110,16 +114,26 @@ The application logs information to the console:
 ## Troubleshooting
 
 1. If the bridge cannot connect to the MQTT broker:
-   - Verify the broker is running at `bombadil:1883`
+   - Verify the broker is running at the configured host and port
    - Check the username and password are correct
    - Ensure network connectivity to the broker
 
 2. If Artisan cannot connect to the WebSocket:
    - Verify the bridge is running
-   - Check that port 8765 is not blocked by a firewall
    - Confirm the WebSocket settings in Artisan match the bridge configuration
 
 3. If temperature values are not updating:
    - Verify MQTT messages are being published to the `artisan` topic
    - Check that the JSON format includes ET and BT fields
    - Ensure the bridge is receiving and parsing the messages (check logs)
+
+# Artisan Log Markdown Extractor
+
+Extracts roast information from Artisan log files (.alog) and converts it to markdown format for easy review.
+
+## Usage
+```
+./artisan_log_markdown.py path/to/roast.alog > roast.md
+./artisan_log_markdown.py path/to/roast.alog -o roast.md
+find path/to/roasts -name '*.alog' | xargs -n1 ./artisan_log_markdown.py >> roasts.md
+```

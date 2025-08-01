@@ -57,12 +57,12 @@ def main():
         client.publish(MQTT_TOPIC, json.dumps(data1))
         print(f"Published: {data1}")
         
-        time.sleep(2)
+        time.sleep(4)
         
-        # Test message 2
+        # Test message 2 - order swapped
         data2 = {
-            "ET": 301,
             "BT": 241,
+            "ET": 301,
             "timestamp": time.time()
         }
         if args.debug:
@@ -70,7 +70,7 @@ def main():
         client.publish(MQTT_TOPIC, json.dumps(data2))
         print(f"Published: {data2}")
         
-        time.sleep(2)
+        time.sleep(4)
         
         # Test message 3 - only BT
         data3 = {
