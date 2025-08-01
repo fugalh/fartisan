@@ -1,0 +1,2 @@
+python artisan_roast_extractor.py example1.alog
+python artisan_roast_extractor.py example1.alog -o roast_report.md
