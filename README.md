@@ -59,7 +59,7 @@ Run the bridge:
 
 ### Configure Artisan to connect to the WebSocket
 
-![screenshots/ports.png](ports dialog screenshot)
+![ports dialog screenshot](screenshots/ports.png)
 
 - Config » Port… » WebSocket tab
   - Set the following parameters:
@@ -70,7 +70,7 @@ Run the bridge:
     - Input 1 (BT): Set Node to `BT`
     - Input 2 (ET): Set Node to `ET`
 
-![screenshots/device_assignment.png](device assignment dialog screenshot)
+![device assingment dialog screenshot](screenshots/device_assignment.png)
 
 Config » Device…
   - Choose Meter
