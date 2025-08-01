@@ -19,19 +19,22 @@ import argparse
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# MQTT Configuration
-MQTT_HOST = "bombadil"
+# MQTT Configuration (defaults)
+DEFAULT_MQTT_HOST = "bombadil"
 MQTT_PORT = 1883
 MQTT_TOPIC = "artisan"
-MQTT_USER = "artisan"
-MQTT_PASSWORD = "cafe"
+DEFAULT_MQTT_USER = "artisan"
+DEFAULT_MQTT_PASSWORD = "cafe"
 
 # WebSocket Configuration
 WEBSOCKET_HOST = "localhost"
 WEBSOCKET_PORT = 8765
 
 class MQTTArtisanBridge:
-    def __init__(self):
+    def __init__(self, mqtt_host=DEFAULT_MQTT_HOST, mqtt_user=DEFAULT_MQTT_USER, mqtt_password=DEFAULT_MQTT_PASSWORD):
+        self.mqtt_host = mqtt_host
+        self.mqtt_user = mqtt_user
+        self.mqtt_password = mqtt_password
         # Store latest ET/BT values
         self.latest_values = {"ET": None, "BT": None}
         self.message_queue = Queue()
@@ -41,7 +44,8 @@ class MQTTArtisanBridge:
         
         # Setup MQTT client
         self.mqtt_client = mqtt.Client()
-        self.mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+        if self.mqtt_user and self.mqtt_password:
+            self.mqtt_client.username_pw_set(self.mqtt_user, self.mqtt_password)
         self.mqtt_client.on_connect = self.on_mqtt_connect
         self.mqtt_client.on_message = self.on_mqtt_message
         self.mqtt_client.on_disconnect = self.on_mqtt_disconnect
@@ -53,8 +57,8 @@ class MQTTArtisanBridge:
     def run_mqtt(self):
         """Run MQTT client in a separate thread"""
         try:
-            logger.info(f"Connecting to MQTT broker at {MQTT_HOST}:{MQTT_PORT}")
-            self.mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
+            logger.info(f"Connecting to MQTT broker at {self.mqtt_host}:{MQTT_PORT}")
+            self.mqtt_client.connect(self.mqtt_host, MQTT_PORT, 60)
             self.mqtt_client.loop_forever()
         except Exception as e:
             logger.error(f"MQTT connection error: {e}")
@@ -164,14 +168,14 @@ class MQTTArtisanBridge:
         logger.info("WebSocket server started")
         return server
 
-async def main(debug=False):
+async def main(debug=False, mqtt_host=DEFAULT_MQTT_HOST, mqtt_user=DEFAULT_MQTT_USER, mqtt_password=DEFAULT_MQTT_PASSWORD):
     """Main function to start the bridge"""
     # Set logging level based on debug flag
     if debug:
         logging.getLogger().setLevel(logging.DEBUG)
         logger.debug("Debug mode enabled")
     
-    bridge = MQTTArtisanBridge()
+    bridge = MQTTArtisanBridge(mqtt_host, mqtt_user, mqtt_password)
     
     # Start WebSocket server
     server = await bridge.start_websocket_server()
@@ -187,6 +191,12 @@ if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='MQTT to Artisan WebSocket Bridge')
     parser.add_argument('--debug', action='store_true', help='Enable debug logging')
+    parser.add_argument('-H', '--host', dest='mqtt_host', default=DEFAULT_MQTT_HOST,
+                       help=f'MQTT broker hostname (default: {DEFAULT_MQTT_HOST})')
+    parser.add_argument('-u', '--user', dest='mqtt_user', default=DEFAULT_MQTT_USER,
+                       help=f'MQTT username (default: {DEFAULT_MQTT_USER})')
+    parser.add_argument('-p', '--password', dest='mqtt_password', default=DEFAULT_MQTT_PASSWORD,
+                       help='MQTT password (default: configured default)')
     args = parser.parse_args()
     
-    asyncio.run(main(args.debug))
+    asyncio.run(main(args.debug, args.mqtt_host, args.mqtt_user, args.mqtt_password))
