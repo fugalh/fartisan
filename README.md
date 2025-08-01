@@ -57,20 +57,24 @@ Run the bridge:
    ./mqtt_artisan_bridge.py --debug
    ```
 
-Configure Artisan to connect to the WebSocket:
-![screenshots/ports.png]
- - Config » Port… » WebSocket tab
-   - Set the following parameters:
-     - Host: `localhost`
-     - Port: `8765`
-     - Data Request: `getData`
-   - For the input channels:
-     - Input 1 (BT): Set Node to `BT`
-     - Input 2 (ET): Set Node to `ET`
-![screenshots/device_assignment.png]
- - Config » Device…
-   - Choose Meter
-   - Choose "WebSocket" from the dropdown
+### Configure Artisan to connect to the WebSocket
+
+![screenshots/ports.png](ports dialog screenshot)
+
+- Config » Port… » WebSocket tab
+  - Set the following parameters:
+    - Host: `localhost`
+    - Port: `8765`
+    - Data Request: `getData`
+  - For the input channels:
+    - Input 1 (BT): Set Node to `BT`
+    - Input 2 (ET): Set Node to `ET`
+
+![screenshots/device_assignment.png](device assignment dialog screenshot)
+
+Config » Device…
+  - Choose Meter
+  - Choose "WebSocket" from the dropdown
 
 The bridge will:
  - Connect to the MQTT broker
