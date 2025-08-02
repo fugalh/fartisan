@@ -57,25 +57,6 @@ Run the bridge:
    ./mqtt_artisan_bridge.py --debug
    ```
 
-### Configure Artisan to connect to the WebSocket
-
-![ports dialog screenshot](screenshots/ports.png)
-
-- Config » Port… » WebSocket tab
-  - Set the following parameters:
-    - Host: `localhost`
-    - Port: `8765`
-    - Data Request: `getData`
-  - For the input channels:
-    - Input 1 (BT): Set Node to `BT`
-    - Input 2 (ET): Set Node to `ET`
-
-![device assingment dialog screenshot](screenshots/device_assignment.png)
-
-Config » Device…
-  - Choose Meter
-  - Choose "WebSocket" from the dropdown
-
 The bridge will:
  - Connect to the MQTT broker
  - Subscribe to the `artisan` topic
@@ -83,7 +64,26 @@ The bridge will:
  - Serve a WebSocket endpoint at `ws://localhost:8765/`
  - Respond to Artisan's requests with the latest data
 
-## Expected MQTT Message Format
+### Configure Artisan to connect to the WebSocket
+
+![ports dialog screenshot](screenshots/ports.png)
+
+In the Config » Port… » WebSocket tab, set the following parameters:
+- Host: `localhost`
+- Port: `8765`
+- Data Request: `getData`
+- For the input channels:
+  - Input 1 (BT): Set Node to `BT`
+  - Input 2 (ET): Set Node to `ET`
+
+![device assingment dialog screenshot](screenshots/device_assignment.png)
+
+In the Config » Device… dialog, set the following:
+- Choose Meter
+- Choose "WebSocket" from the dropdown
+
+
+## MQTT Message Format
 
 The bridge expects JSON messages with ET and BT values:
 
@@ -96,10 +96,9 @@ The bridge expects JSON messages with ET and BT values:
 
 Other fields in the JSON will be ignored.
 
-## Artisan Configuration
+## Artisan Message Format
 
-In Artisan's WebSocket configuration:
-- The expected response format is:
+Artisan will send `getData` requests, and the response format is:
   ```json
   {
     "id": 12345,
