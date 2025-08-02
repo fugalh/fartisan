@@ -126,6 +126,7 @@ def format_as_markdown(roast_data):
         markdown.append(roast_data['cupping_notes'])
         markdown.append("")  # Blank line
     
+    markdown.append("---")
     return "\n".join(markdown)
 
 def main():

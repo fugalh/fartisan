@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
 MQTT to Artisan WebSocket Bridge
 Connects to MQTT broker, subscribes to artisan topic, and forwards ET/BT values to Artisan via WebSocket.

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """
 Test script to connect to the MQTT to Artisan WebSocket Bridge and send requests
 """
