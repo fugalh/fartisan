@@ -5,6 +5,7 @@ Supplemental tools for working with [Artisan](https://artisan-scope.org/)
 - `artisan_log_markdown.py` print roast summary as markdown
 
 Authors: Hans and Von Fugal
+
 License: MIT
 
 # MQTT to Artisan WebSocket Bridge
